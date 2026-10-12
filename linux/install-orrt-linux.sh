@@ -5,7 +5,9 @@ set -e
 echo "Installing ORRT for Linux..."
 echo "[1/6] Проверка и установка зависимостей (Wine, Python, gcc, curl, unzip)..."
 
-if command -v dnf >/dev/null 2>&1; then
+if command -v wine >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1; then
+    echo "Зависимости (Wine, Python) уже установлены в системе, продолжаем..."
+elif command -v dnf >/dev/null 2>&1; then
     echo "Обнаружен пакетный менеджер DNF (Fedora / RHEL)..."
     sudo dnf install -y wine python3 gcc curl unzip libnotify xdg-utils
 elif command -v apt-get >/dev/null 2>&1; then
@@ -376,9 +378,10 @@ fi
 # ══════════════════════════════════════════════════════════════════════════════
 # GAME (play) mode
 # ══════════════════════════════════════════════════════════════════════════════
-export WINEDLLOVERRIDES="advapi32=n,b"
-[ -f "$HOOK_LIB" ] && export LD_PRELOAD="$HOOK_LIB"
-command -v notify-send >/dev/null 2>&1 && notify-send "ORRT" "Запуск игры..." -i applications-games 2>/dev/null || true
+if [ "$CLIENT_VER" != "2020L" ]; then
+    export WINEDLLOVERRIDES="advapi32=n,b"
+    [ -f "$HOOK_LIB" ] && export LD_PRELOAD="$HOOK_LIB"
+fi
 
 AUTH_URL="${BASE_URL}/Login/Negotiate.ashx"
 CLIENT_DIR="$WINE_PREFIX/drive_c/users/$CURRENT_USER/AppData/Local/ORRT/Versions/v1.0.0/$CLIENT_VER"
@@ -412,17 +415,23 @@ CLIENT_BASE_URL="$BASE_URL"
 CLIENT_AUTH_URL="$AUTH_URL"
 CLIENT_PLACELAUNCHER="$PLACELAUNCHER"
 
-if [ "$CLIENT_VER" = "2020L" ] || [ "$CLIENT_VER" = "2018L" ]; then
+if [ "$CLIENT_VER" = "2020L" ] || [ "$CLIENT_VER" = "2018L" ] || [ "$CLIENT_VER" = "2017L" ]; then
     CLIENT_BASE_URL="http://oldrrt.xyz"
     CLIENT_AUTH_URL="http://oldrrt.xyz/Login/Negotiate.ashx"
     CLIENT_PLACELAUNCHER=$(echo "$PLACELAUNCHER" | sed 's|https\?://[^/]*|http://oldrrt.xyz|')
 fi
 
-printf '<?xml version="1.0" encoding="UTF-8"?>\n<Settings>\n\t<ContentFolder>content</ContentFolder>\n\t<BaseUrl>%s/</BaseUrl>\n</Settings>\n' "${CLIENT_BASE_URL%/}" > "$CLIENT_DIR/AppSettings.xml"
+printf '<Settings><ContentFolder>content</ContentFolder><BaseUrl>%s/</BaseUrl></Settings>' "${CLIENT_BASE_URL%/}" > "$CLIENT_DIR/AppSettings.xml"
 mkdir -p "$CLIENT_DIR/ClientSettings"
-printf '{\n\t"BaseUrl": "%s/",\n\t"DFIntTaskSchedulerTargetFps": 180\n}\n' "$CLIENT_BASE_URL" > "$CLIENT_DIR/ClientSettings/ClientAppSettings.json"
+cat <<EOF > "$CLIENT_DIR/ClientSettings/ClientAppSettings.json"
+{
+	"BaseUrl": "${CLIENT_BASE_URL}/",
+	"DFIntTaskSchedulerTargetFps": 180,
+	"FFlagRoactBubbleChat": "True"
+}
+EOF
 
-setsid nohup wine "$ROBLOX_EXE" --app -a "$CLIENT_AUTH_URL" -t "$TICKET" -j "$CLIENT_PLACELAUNCHER" >> "$LOG_FILE" 2>&1 </dev/null &
+setsid nohup wine "$ROBLOX_EXE" -a "$CLIENT_AUTH_URL" -t "$TICKET" -j "$CLIENT_PLACELAUNCHER" >> "$LOG_FILE" 2>&1 </dev/null &
 """
 
 home = os.path.expanduser("~")

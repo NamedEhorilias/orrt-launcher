@@ -510,14 +510,12 @@ with open(plugin_path, "w", encoding="utf-8") as f:
     exit 0
 fi
 
-export WINEDLLOVERRIDES="advapi32=n,b"
-HOOK_LIB="$HOME/.cache/orrt/lib/liborrt_hosts.so"
-if [ -f "$HOOK_LIB" ]; then
-    export LD_PRELOAD="$HOOK_LIB"
-fi
-
-if command -v notify-send >/dev/null 2>&1; then
-    notify-send "Old Roblox Return Today" "Запуск игры..." -i "applications-games" 2>/dev/null || true
+if [ "$CLIENT_VER" != "2020L" ]; then
+    export WINEDLLOVERRIDES="advapi32=n,b"
+    HOOK_LIB="$HOME/.cache/orrt/lib/liborrt_hosts.so"
+    if [ -f "$HOOK_LIB" ]; then
+        export LD_PRELOAD="$HOOK_LIB"
+    fi
 fi
 
 AUTH_URL="${BASE_URL}/Login/Negotiate.ashx"
@@ -582,4 +580,4 @@ cat <<EOF > "$CLIENT_DIR/ClientSettings/ClientAppSettings.json"
 }
 EOF
 
-setsid nohup wine "$ROBLOX_EXE" --app -a "$CLIENT_AUTH_URL" -t "$TICKET" -j "$CLIENT_PLACELAUNCHER" >> "$LOG_FILE" 2>&1 </dev/null &
+setsid nohup wine "$ROBLOX_EXE" -a "$CLIENT_AUTH_URL" -t "$TICKET" -j "$CLIENT_PLACELAUNCHER" >> "$LOG_FILE" 2>&1 </dev/null &

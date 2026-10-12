@@ -1,0 +1,22 @@
+[package]
+name = "orrt-launcher"
+version = "1.0.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.99"
+figlet-rs = "0.1.5"
+open = "5.3.2"
+paris = { version = "1.5.15", features = ["macros", "timestamps"] }
+regex = "1.11.2"
+reqwest = { version = "0.12.23", default-features = false, features = ["rustls-tls"] }
+termcolor = "1.4.1"
+tokio = { version = "1.47.1", features = ["full"] }
+winreg = "0.52"
+zip = { version = "2.2.0", default-features = false, features = ["deflate"] }
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1

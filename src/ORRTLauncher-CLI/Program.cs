@@ -112,6 +112,11 @@ namespace ORRTLauncher
 
             return result;
         }
+
+        /// <summary>
+        /// Extracts the base URL (scheme + host) from the placelauncherurl parameter.
+        /// Forces http:// scheme because 2017/2018 Roblox client cannot negotiate modern TLS 1.3 / Cloudflare certs.
+        /// </summary>
         static string ExtractBaseUrl(string placeLauncherUrl)
         {
             try
@@ -198,8 +203,19 @@ namespace ORRTLauncher
 
         static async Task Main(string[] args)
         {
-            Console.Title = "ORRT Launcher";
-            Console.WriteLine("ORRT Launcher - " + FallbackBaseUrl);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(@"
+    ____   _____   _____ _______ 
+   / __ \ |  __ \ |  __ \__   __|
+  | |  | || |__) || |__) | | |   
+  | |  | ||  _  / |  _  /  | |   
+  | |__| || | \ \ | | \ \  | |   
+   \____/ |_|  \_\|_|  \_\ |_|   
+");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(" Old Roblox Return Today - " + FallbackBaseUrl);
+            Console.WriteLine("==================================================");
+            Console.ResetColor();
 
             try
             {
@@ -652,7 +668,7 @@ namespace ORRTLauncher
             psi.FileName = clientExe;
             psi.WorkingDirectory = clientDir;
             // Standard bootstrapper flags matching official client and Linux launcher
-            psi.Arguments = $"--app -a \"{authUrl}\" -t \"{gameInfo}\" -j \"{placeLauncherUrl}\"";
+            psi.Arguments = $"-a \"{authUrl}\" -t \"{gameInfo}\" -j \"{placeLauncherUrl}\"";
             psi.UseShellExecute = true;
 
             var process = Process.Start(psi);

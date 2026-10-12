@@ -600,6 +600,9 @@ namespace ORRTLauncher
             }
         }
 
+        [System.Runtime.InteropServices.DllImport("wininet.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, SetLastError = true)]
+        static extern bool InternetSetCookie(string lpszUrlName, string lpszCookieName, string lpszCookieData);
+
         static async Task LaunchGameAsync(string uri)
         {
             Log("[*] Processing game launch request...");
@@ -658,7 +661,8 @@ namespace ORRTLauncher
             CleanHostsFile();
 
             // Build auth URL with required suggest query parameter
-            string authUrl = $"{baseUrl}/Login/Negotiate.ashx?suggest={Uri.EscapeDataString(gameInfo)}";
+            string authUrl = $"{baseUrl}/Login/Negotiate.ashx";
+            try { foreach (var cu in new[]{"http://oldrrt.xyz/","http://www.oldrrt.xyz/",baseUrl+"/"}) { InternetSetCookie(cu, ".ROBLOSECURITY", gameInfo + "; path=/; domain=" + new Uri(cu).Host); } } catch { }
             Log("[+] Starting game client (" + clientVersion + ")...");
             Log("[*] Executable: " + clientExe);
             Log("[*] Auth URL: " + authUrl);

@@ -141,12 +141,14 @@ placelauncher = (placelauncher
     .replace("https://oldrrt.xyz","http://oldrrt.xyz"))
 p = urllib.parse.urlparse(placelauncher)
 base_url = f"http://{p.netloc}" if p.netloc else "http://oldrrt.xyz"
+launch_mode = res.get("launchmode", "play")
+place_id = res.get("place_id", "")
 print(f"TICKET={shlex.quote(ticket)}")
 print(f"CLIENT_VER={shlex.quote(client_ver)}")
 print(f"PLACELAUNCHER={shlex.quote(placelauncher)}")
 print(f"BASE_URL={shlex.quote(base_url)}")
-print(f"LAUNCH_MODE={shlex.quote(res[\"launchmode\"])}")
-print(f"PLACE_ID={shlex.quote(res[\"place_id\"])}")
+print(f"LAUNCH_MODE={shlex.quote(launch_mode)}")
+print(f"PLACE_ID={shlex.quote(place_id)}")
 ' "$RAW_URI")"
 
 WINE_PREFIX="${WINEPREFIX:-$HOME/.wine}"
@@ -380,8 +382,8 @@ fi
 # ══════════════════════════════════════════════════════════════════════════════
 if [ "$CLIENT_VER" != "2020L" ]; then
     export WINEDLLOVERRIDES="advapi32=n,b"
-    [ -f "$HOOK_LIB" ] && export LD_PRELOAD="$HOOK_LIB"
 fi
+[ -f "$HOOK_LIB" ] && export LD_PRELOAD="$HOOK_LIB"
 
 AUTH_URL="${BASE_URL}/Login/Negotiate.ashx"
 CLIENT_DIR="$WINE_PREFIX/drive_c/users/$CURRENT_USER/AppData/Local/ORRT/Versions/v1.0.0/$CLIENT_VER"
@@ -406,7 +408,7 @@ ROBLOX_EXE=""
 [ -f "$CLIENT_DIR/ORRTPlayerBeta.exe" ] && ROBLOX_EXE="$CLIENT_DIR/ORRTPlayerBeta.exe"
 [ -z "$ROBLOX_EXE" ] && [ -f "$CLIENT_DIR/RobloxPlayerBeta.exe" ] && ROBLOX_EXE="$CLIENT_DIR/RobloxPlayerBeta.exe"
 [ -z "$ROBLOX_EXE" ] && [ -f "$CLIENT_DIR/ProjectXPlayerBeta.exe" ] && ROBLOX_EXE="$CLIENT_DIR/ProjectXPlayerBeta.exe"
-[ -z "$ROBLOX_EXE" ] && ROBLOX_EXE=$(find "$WINE_PREFIX/drive_c" -type f \( -iname "ORRTPlayerBeta.exe" -o -iname "RobloxPlayerBeta.exe" -o -iname "ProjectXPlayerBeta.exe" \) 2>/dev/null | head -n 1)
+[ -z "$ROBLOX_EXE" ] && ROBLOX_EXE=$(find "$CLIENT_DIR" -type f \( -iname "ORRTPlayerBeta.exe" -o -iname "RobloxPlayerBeta.exe" -o -iname "ProjectXPlayerBeta.exe" \) 2>/dev/null | head -n 1)
 
 CLIENT_DIR="$(dirname "$ROBLOX_EXE")"
 cd "$CLIENT_DIR"
